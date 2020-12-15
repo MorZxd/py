@@ -38,6 +38,9 @@ def listofdicts2dictoflists(listofdicts):
     return dict(dictoflists)
 
 
+def table2dictoflists(table):
+    pass
+
 
 def listofdicts2dictoflists2(listofdicts):
     # find keys:
