@@ -1,28 +1,3 @@
-listofdicts = [
-    {'model': 'LADA 2121', 'passengers': 4, 'power': 76, 'country': 'Russia'},
-    {'model': 'Mercedes E124', 'passengers': 4, 'power': 156, 'country': 'Denmark'},
-    # {'model': 'Mercedes E124', 'pasengers': 4, 'power': 156, 'country': 'Denmark'},
-]
-
-
-dictoflists = {
-    'model': ['LADA 2121', 'Mercedes E124'],
-    'passengers': [4, 4],
-    'power': [76, 156],
-    'country': ['Russia', 'Denmark'],
-}
-
-
-table = {
-    'columns': ['model', 'passengers', 'power', 'country'],
-    'data': [
-        ['LADA 2121', 4, 76, 'Russia',],
-        ['Mercedes E124', 4, 156, 'Denmark']
-    ]
-}
-
-# listofdicts -> dictoflists: (цикл) заполняем словарь dictoflists =  {listofdicts[i].keys[i] (надо взять 1 ключ ) (возьмем и-тый ключ из первого словаря)} = list(listofdicts[listofdicts.keys[1]].values)
-
 from collections import defaultdict
 
 def listofdicts2dictoflists(listofdicts):
@@ -97,14 +72,68 @@ def dictoflists2table(dictoflists):
         table["data"].append(row)
     return table
 
+def guess_format(data):
+    if isinstance(data, list):
+        return 'listofdicts'
+    if isinstance(data, dict):
+        if set(data.keys()) == set(['columns', 'data']):
+            if isinstance(data['data'], list):
+                if len(data['data']) > 0:
+                    if isinstance(data['data'][0], list):
+                        return 'table'
+                else:
+                    return 'table'
+    if isinstance(data, dict):
+        if all([isinstance(val, list) for val in data.values()]):
+            return 'dictoflists'
+    return None     
 
-res = dictoflists2table(dictoflists)
-print(res)
+def convert(data, output_format: str, input_format: str = None):
+
+    if input_format is None:
+        input_format = guess_format(data)
+    if (input_format is None) or (input_format not in ('table', 'listofdicts', 'dictoflists')):
+        raise Exception('unknown input format')
+    if (output_format not in ('table', 'listofdicts', 'dictoflists')):
+        raise Exception('unknown output format')
 
 
+    # inner_data -- data in our inner format (e.g. listofdicts)
+    if (input_format == 'dictoflists'):
+        inner_data = data
+    if (input_format == 'table'):
+        inner_data = table2dictoflists(data)
+    if (input_format == 'listofdicts'):
+        inner_data = listofdicts2dictoflists(data)
+    
 
-# dictoflists -> listofdicts: (цикл) заполняем словарь listofdicts = list({dictoflists.keys[i]: dictoflists[i] (вообщем надо взять значения по ключу i)
-# listofdicts -> table: table[header] = (цикл) listofdicts[i].keys, значения по ключам из 1 листа помещаем в table[data] = list(все значения в listofdicts[i])
-# dictoflists -> table: table[header] = dictoflists.keys, table[data] = list(только итые значения (???))
-# table -> что угодно: как то с помощью зипа?
-# print(listofdicts[1])
+    if (output_format == 'table'):
+        out_data = dictoflists2table(inner_data)
+    if (output_format == 'listofdicts'):
+        out_data = dictoflists2listofdicts(inner_data)
+    if (output_format == 'dictoflists'):
+        out_data = inner_data
+    
+
+    # if not check(out_data):
+    #     raise 'out check failed'
+
+    return out_data
+
+
+if __name__ == '__main__':
+
+    from sample_data import table, dictoflists, listofdicts
+
+    assert table2dictoflists(table) == dictoflists
+    assert dictoflists2listofdicts(dictoflists) == listofdicts
+
+
+    # import pandas as pd
+    # df1 = pd.DataFrame(listofdicts)
+    # df2 = pd.DataFrame(dictoflists)
+    # print(df1)
+    # print(df2)
+    # df1['hp_per_pass'] = df1['power'] / df1['passengers']
+    # print(df1)
+
